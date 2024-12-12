@@ -12,9 +12,10 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ message: "O campo 'text' é obrigatório." });
     }
 
+    // Se o autor não for fornecido, podemos atribuir um valor padrão (ex: "João")
     const newThought = new Thought({
       text,
-      author, // 'author' é opcional
+      author: author || "João", // Se não houver autor, usa "João" como padrão
     });
 
     // Salvando o pensamento no banco de dados
@@ -30,10 +31,18 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Rota para obter todos os pensamentos
+// Rota para obter todos os pensamentos, com opção de filtrar por autor
 router.get("/", async (req, res) => {
   try {
-    const thoughts = await Thought.find();
+    const { author } = req.query; // Verificando se há um filtro de autor na query
+
+    let thoughts;
+    if (author) {
+      thoughts = await Thought.find({ author }); // Filtrando por autor
+    } else {
+      thoughts = await Thought.find(); // Retornando todos os pensamentos
+    }
+
     res.status(200).json(thoughts);
   } catch (error) {
     res.status(400).json({ message: "Erro ao obter pensamentos", error });
