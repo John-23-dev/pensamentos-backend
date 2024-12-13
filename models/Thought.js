@@ -9,6 +9,10 @@ const thoughtSchema = new mongoose.Schema({
     type: String,
     required: false, // O campo 'author' é opcional
   },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Data de criação automática
+  },
 });
 
 const Thought = mongoose.model("Thought", thoughtSchema);

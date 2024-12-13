@@ -34,14 +34,13 @@ router.post("/", async (req, res) => {
 // Rota para obter todos os pensamentos, com opção de filtrar por autor
 router.get("/", async (req, res) => {
   try {
-    const { author } = req.query; // Verificando se há um filtro de autor na query
+    const { author, limit } = req.query; // Recebe o autor e o limite da query
+    const query = author ? { author } : {}; // Filtra por autor se fornecido
 
-    let thoughts;
-    if (author) {
-      thoughts = await Thought.find({ author }); // Filtrando por autor
-    } else {
-      thoughts = await Thought.find(); // Retornando todos os pensamentos
-    }
+    // Ordena os pensamentos por data (mais recente primeiro) e aplica o limite
+    const thoughts = await Thought.find(query)
+      .sort({ createdAt: -1 }) // Ordena por data mais recente
+      .limit(Number(limit) || 10); // Limita o número de pensamentos (padrão: 10)
 
     res.status(200).json(thoughts);
   } catch (error) {
