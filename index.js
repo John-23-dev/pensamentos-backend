@@ -4,7 +4,6 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const cron = require("node-cron"); // Importação do cron job
 const Thought = require("./models/Thought"); // Modelo de pensamentos
-const Archive = require("./models/Archive"); // Modelo para pensamentos arquivados
 
 const app = express();
 
@@ -29,32 +28,30 @@ app.get("/", (req, res) => {
   res.send("API funcionando!");
 });
 
-// Cron Job para arquivar pensamentos diariamente às 23:59
-cron.schedule("59 23 * * *", async () => {
+// Cron job para rodar uma vez por dia (a cada 24 horas)
+cron.schedule("0 0 * * *", async () => {
+  console.log("Cron job de exclusão de pensamentos antigos em execução...");
+
   try {
     const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); // Data de ontem
+    yesterday.setDate(yesterday.getDate() - 1); // Subtrai 1 dia da data atual
 
-    console.log("Iniciando processo de arquivamento...");
-
-    // Filtrar pensamentos criados antes de ontem
-    const thoughtsToArchive = await Thought.find({
+    // Encontre todos os pensamentos com mais de 1 dia
+    const oldThoughts = await Thought.find({
       createdAt: { $lt: yesterday },
     });
 
-    if (thoughtsToArchive.length > 0) {
-      // Insere os pensamentos no modelo de arquivados
-      await Archive.insertMany(thoughtsToArchive);
-
-      // Remove os pensamentos arquivados do modelo original
-      await Thought.deleteMany({ createdAt: { $lt: yesterday } });
-
-      console.log(`Arquivados ${thoughtsToArchive.length} pensamentos.`);
+    if (oldThoughts.length > 0) {
+      // Exclui os pensamentos antigos da coleção Thought
+      await Thought.deleteMany({
+        createdAt: { $lt: yesterday },
+      });
+      console.log(`Excluídos ${oldThoughts.length} pensamentos.`);
     } else {
-      console.log("Nenhum pensamento para arquivar hoje.");
+      console.log("Nenhum pensamento para excluir hoje.");
     }
   } catch (error) {
-    console.error("Erro ao arquivar pensamentos:", error);
+    console.error("Erro ao executar o cron job:", error);
   }
 });
 

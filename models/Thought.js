@@ -1,20 +1,20 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose"); // Adicione esta linha para importar o mongoose
 
-const thoughtSchema = new mongoose.Schema({
+const ThoughtSchema = new mongoose.Schema({
   text: {
     type: String,
-    required: true, // O campo 'text' é obrigatório
+    required: true,
   },
   author: {
     type: String,
-    required: false, // O campo 'author' é opcional
+    default: "João", // Valor padrão, caso o autor não seja especificado
   },
   createdAt: {
     type: Date,
-    default: Date.now, // Data de criação automática
+    default: Date.now, // A data de criação é definida automaticamente
   },
 });
 
-const Thought = mongoose.model("Thought", thoughtSchema);
+const Thought = mongoose.model("Thought", ThoughtSchema);
 
 module.exports = Thought;
